@@ -8,9 +8,10 @@ int main() {
     printf("Enter the bits to be stuffed: ");
     scanf("%s", bits); // No & needed for string input
 
-    printf("01111110"); // Frame start delimiter
+    printf("01111110 "); // Frame start delimiter
 
-    for(int i = 0; i < strlen(bits); i++) {
+    int length = strlen(bits);
+    for(int i = 0; i < length; i++) {
         if(bits[i] == '1') {
             count++;
         } else {
@@ -21,11 +22,16 @@ int main() {
 
         if(count == 5) {
             printf("0");
-            count = 0;
+            count = 0; // Reset count after inserting stuffed bit
         }
     }
 
-    printf("01111110"); // Frame end delimiter
+    // If the last bit sequence ends with exactly five 1's, we need to add an extra 0
+    if(count == 5) {
+        printf("0");
+    }
+
+    printf(" 01111110"); // Frame end delimiter
 
     return 0;
 }
