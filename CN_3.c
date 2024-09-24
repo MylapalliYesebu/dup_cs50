@@ -16,11 +16,13 @@ void printCheckSum(int* b1, int* b2, int n) {
         carry = sum / 2;
     }
 
-    // Add carry to the result (if there's any overflow)
-    for (int i = n - 1; i >= 0; i--) {
-        int sum = temp[i] + carry;
-        temp[i] = sum % 2;
-        carry = sum / 2;
+    // Only add the carry if carry is non-zero
+    if (carry > 0) {
+        for (int i = n - 1; i >= 0; i--) {
+            int sum = temp[i] + carry;
+            temp[i] = sum % 2;
+            carry = sum / 2;
+        }
     }
 
     // Print 1's complement sum
