@@ -1,127 +1,75 @@
 #include <stdio.h>
 #include <string.h>
+#define N strlen(g)  // Define N as the length of the generator polynomial
 
-#define CRC12_POLY "1100000001111"
-#define CRC16_POLY "11000000000000101"
-#define CRC_CCITT_POLY "10001000000100001"
+char t[28], cs[28], g[28];  // Arrays for the data, checksum, and generator polynomial
+int a, e, c, b;
 
-#define CRC12_LEN 13
-#define CRC16_LEN 17
-#define CRC_CCITT_LEN 17
-
-void xorOperation(char *remainder, const char *polynomial, int polyLen) {
-    for (int i = 0; i < polyLen; i++) {
-        remainder[i] = (remainder[i] == polynomial[i]) ? '0' : '1';
-    }
+void xor() {
+    for(c = 1; c < N; c++)
+        cs[c] = ((cs[c] == g[c]) ? '0' : '1');  // Perform XOR between cs and g
 }
 
-void crc(char *data, const char *polynomial, char *checksum, int polyLen) {
-    int dataLen = strlen(data);
-    int totalLen = dataLen + polyLen - 1;
-
-    // Append zeros to the data
-    char modifiedData[totalLen + 1];
-    strcpy(modifiedData, data);
-    for (int i = dataLen; i < totalLen; i++) {
-        modifiedData[i] = '0';
-    }
-    modifiedData[totalLen] = '\0';
-
-    // Initialize remainder with the modified data
-    char remainder[totalLen + 1];
-    strncpy(remainder, modifiedData, totalLen);
-    remainder[totalLen] = '\0';
-
-    // Perform CRC calculation
-    for (int i = 0; i < dataLen; i++) {
-        if (remainder[i] == '1') {
-            xorOperation(remainder + i, polynomial, polyLen);
-        }
-    }
-
-    // Copy the remainder to checksum
-    strncpy(checksum, remainder + dataLen, polyLen - 1);
-    checksum[polyLen - 1] = '\0';
+void crc() {
+    for(e = 0; e < N; e++) cs[e] = t[e];  // Initialize cs with the first part of t
+    do {
+        if(cs[0] == '1') xor();  // Perform XOR if the first bit is 1
+        for(c = 0; c < N - 1; c++) cs[c] = cs[c + 1];  // Shift left
+        cs[c] = t[e++];  // Bring in the next bit
+    } while(e <= a + N - 1);
 }
 
 int main() {
-    int option;
-    char data[100], checksum[20];
-
+    int flag = 0;
     do {
         printf("--MENU ----\n");
-        printf("1. CRC-12\n2. CRC-16\n3. CRC-CCITT\n4. Exit\n\nEnter your option: ");
-        scanf("%d", &option);
-
-        if (option == 4) break;
+        printf("1. CRC-12\n2. CRC-16\n3. CRC-CCIP\n4. Exit\n\nEnter your option: ");
+        scanf("%d", &b);
+        switch(b) {
+            case 1: strcpy(g, "1100000001111"); break;  // CRC-12
+            case 2: strcpy(g, "11000000000000101"); break;  // CRC-16
+            case 3: strcpy(g, "10001000000100001"); break;  // CRC-CCIP
+            case 4: return 0;  // Exit
+        }
 
         printf("Enter data: ");
-        scanf("%s", data);
+        scanf("%s", t);
+        printf("Generating polynomial: %s\n", g);
+        a = strlen(t);
 
-        switch (option) {
-            case 1:
-                printf("Generating polynomial: %s\n", CRC12_POLY);
-                crc(data, CRC12_POLY, checksum, CRC12_LEN);
-                printf("Checksum is: %s\n", checksum);
-                printf("Final codeword is: %s%s\n", data, checksum);
-                break;
-            case 2:
-                printf("Generating polynomial: %s\n", CRC16_POLY);
-                crc(data, CRC16_POLY, checksum, CRC16_LEN);
-                printf("Checksum is: %s\n", checksum);
-                printf("Final codeword is: %s%s\n", data, checksum);
-                break;
-            case 3:
-                printf("Generating polynomial: %s\n", CRC_CCITT_POLY);
-                crc(data, CRC_CCITT_POLY, checksum, CRC_CCITT_LEN);
-                printf("Checksum is: %s\n", checksum);
-                printf("Final codeword is: %s%s\n", data, checksum);
-                break;
-            default:
-                printf("Invalid option. Please try again.\n");
+        for(e = a; e < a + N - 1; e++)  // Append N-1 zeros to the data
+            t[e] = '0';
+        t[e] = '\0';
+
+        printf("Modified data is: %s\n", t);
+        crc();  // Calculate the CRC
+        printf("Checksum is: %s\n", cs);
+
+        for(e = a; e < a + N - 1; e++)  // Append checksum to data
+            t[e] = cs[e - a];
+        t[e] = '\0';
+
+        printf("Final codeword is: %s\n", t);
+        printf("Test error detection (0: yes, 1: no)? ");
+        scanf("%d", &e);
+
+        if(e == 0) {
+            do {
+                printf("Enter the position where error is to be inserted: ");
+                scanf("%d", &e);
+            } while(e <= 0 || e > a + N - 1);
+            t[e - 1] = (t[e - 1] == '0') ? '1' : '0';  // Flip the bit
+            printf("Erroneous data: %s\n", t);
         }
 
-        int testError;
-        printf("Test error detection (0=yes, 1=no)?: ");
-        scanf("%d", &testError);
+        crc();  // Recalculate CRC on erroneous data
+        for(e = 0; (e < N - 1) && (cs[e] != '1'); e++);
+        if(e < N - 1)
+            printf("Error detected\n\n");
+        else
+            printf("No error detected\n\n");
 
-        if (testError == 0) {
-            int errorPos;
-            printf("Enter the position where error is to be inserted: ");
-            scanf("%d", &errorPos);
-
-            int dataLen = strlen(data);
-            if (errorPos < 0 || errorPos >= dataLen) {
-                printf("Invalid position.\n");
-                continue;
-            }
-
-            // Insert error
-            data[errorPos] = (data[errorPos] == '0') ? '1' : '0';
-            printf("Erroneous data: %s\n", data);
-
-            // Recalculate CRC
-            char erroneousChecksum[20];
-            switch (option) {
-                case 1:
-                    crc(data, CRC12_POLY, erroneousChecksum, CRC12_LEN);
-                    break;
-                case 2:
-                    crc(data, CRC16_POLY, erroneousChecksum, CRC16_LEN);
-                    break;
-                case 3:
-                    crc(data, CRC_CCITT_POLY, erroneousChecksum, CRC_CCITT_LEN);
-                    break;
-            }
-
-            // Check if error is detected
-            if (strcmp(erroneousChecksum, "0") != 0) {
-                printf("Error detected\n");
-            } else {
-                printf("No error detected\n");
-            }
-        }
-    } while (option != 4);
+    } while(flag != 1);
 
     return 0;
 }
