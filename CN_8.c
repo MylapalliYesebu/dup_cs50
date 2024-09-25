@@ -1,41 +1,36 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include<stdio.h>
+#include<stdlib.h>
+int main() // Syntax fix: added closing parenthesis
+{
+    int i, n, r, a;
+    n = 5; // Number of packets is fixed to 5
+    printf("The No of Packets are: %d\n", n);
 
-#define TOTAL_PACKETS 5
-
-int main() {
-    int i, ack, timeout, resend;
-    
-    // Initialize random seed
-    srand(time(NULL));
-
-    printf("The No of Packets are: %d\n", TOTAL_PACKETS);
-
-    for (i = 1; i <= TOTAL_PACKETS; i++) {
+    for (i = 1; i <= n; i++) // Loop for each packet
+    {
         printf("The Packet Sent is %d\n", i);
 
-        // Simulate packet acknowledgment or NACK with a timeout
-        timeout = rand() % 2;  // 0 for timeout, 1 for acknowledgment
+        r = rand() % 2; // Simulating random transmission (successful or not)
 
-        if (timeout == 1) {
-            ack = rand() % 2;  // 0 for NACK, 1 for ACK
-            if (ack == 1) {
-                printf("Ack number: %d\n", i + 1);
-            } else {
-                printf("NACK number: %d\n", i + 1);
-                // Resend packet
-                printf("Resending Packet %d\n", i);
-                i--;  // Decrement to resend the current packet
+        if (r == 1) // Successful transmission
+        {
+            a = rand() % 2; // Simulating random ACK or NACK
+            if (a == 1) // If acknowledgment is received (ACK)
+            {
+                printf("Ack number: %d\n", i + 1); // ACK for the next packet
             }
-        } else {
-            printf("Time Out..! Resend Packet %d\n", i);
-            // Resend packet
-            i--;  // Decrement to resend the current packet
+            else // If no acknowledgment (NACK)
+            {
+                printf("NACK number: %d\n", i + 1); // NACK, resend the same packet
+                i--; // Decrement to resend the same packet
+            }
+        }
+        else // If transmission failure (timeout)
+        {
+            printf("Time Out..! Resend Packet\n");
+            i--; // Decrement to resend the same packet
         }
     }
-
-    printf("All packets sent and acknowledged.\n");
-
+    printf("Packets are transmitted successfully");
     return 0;
 }
