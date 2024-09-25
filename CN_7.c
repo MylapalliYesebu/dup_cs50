@@ -1,45 +1,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NO_OF_PACKETS 15
-#define WINDOW_SIZE 5
+#define no_of_packets 15
+#define window_size 5
 
 int main() {
-    int i = 0, p, nac, ack;
-    int a = NO_OF_PACKETS;
-    int w = WINDOW_SIZE;
+    int p, i = 0, a, w, nac;
+
+    a = no_of_packets;
+    w = window_size;
 
     printf("Transmitting begins...! No of Packets: %d\n", a);
 
     while (i < a) {
-        // Display current window
-        printf("Sending Packets from %d to %d\n", i, (i + w - 1) < a ? (i + w - 1) : (a - 1));
-        
-        // Send packets in the current window
+        printf("Sending Packets from %d to %d\n", i + 1, (i + w < a) ? (i + w) : a);
+
+        // Transmit packets in the current window
         for (p = i; p < (i + w) && p < a; p++) {
-            printf("Transmitting Packet %d\n", p);
+            printf("Transmitting Packet %d\n", p + 1);
         }
 
-        // Simulate acknowledgment or negative acknowledgment
-        nac = rand() % (w + 1);
-        
-        if (nac < WINDOW_SIZE) {
-            printf("NACK: %d\n", nac);
-            printf("Retransmitting Packet: %d\n", nac);
-            // Optionally simulate retransmission
+        // Simulate NACK by generating a random number
+        nac = rand() % (w + 1); // Random NACK in the range of the window
+
+        // If nac is within the current window, it indicates a NACK for a packet
+        if (nac < (i + w) && nac < a) {
+            printf("NACK: %d\n", nac + 1);
+            printf("Sending Packet: %d\n", nac + 1);
+            printf("Ack: %d\n", nac + 2);
         } else {
-            // Simulate acknowledgment for all packets in the current window
-            printf("Ack: %d\n", i + w);
+            printf("Ack: %d\n", (i + w < a) ? (i + w + 1) : (a + 1));
         }
 
-        // Slide the window
+        // Move to the next window
         i += w;
     }
-
-    // Final acknowledgment for the last window
-    if (i >= a) {
-        printf("Ack: %d\n", a);
-    }
-
+    printf("\nThe packets are transmitted successfully\n");
     return 0;
 }
