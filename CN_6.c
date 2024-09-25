@@ -22,6 +22,6 @@ int main() {
         else
             sent = ack;
     }
-
+    printf("\nFrames are transmitted successfully\n");
     return 0;
 }
