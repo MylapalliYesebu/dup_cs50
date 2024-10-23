@@ -77,5 +77,6 @@ int main() {
     // Run Dijkstra's algorithm for vertex 0 as the source
     dijkstra(graph, 0);
 
+    // Report success 
     return 0;
 }
