@@ -1,0 +1,10 @@
+bread,butter,milk
+eggs,bread,
+milk,butter,eggs
+bread,butter,eggs
+milk,bread,
+milk,bread,eggs
+butter,bread,
+milk,eggs,
+bread,milk,
+butter,eggs,
